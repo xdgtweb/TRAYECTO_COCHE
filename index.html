@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Calculadora de consumo de gasolina</title>
+        <link rel="stylesheet" href="leaflet.css">
+        <style>
+            #map {
+                height: 400px;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Calculadora de consumo de gasolina</h1>
+
+        <div id="map"></div>
+
+        <form>
+            <label for="ida_vuelta">Ida y vuelta:</label>
+            <input type="checkbox" id="ida_vuelta" name="ida_vuelta"><br><br>
+
+            <label for="precio_combustible">Precio del combustible:</label>
+            <input type="number" id="precio_combustible" name="precio_combustible" value="1.5" step="0.01" required><br><br>
+
+            <input type="button" value="Calcular" onclick="calcularGasolina()">
+        </form>
+
+        <div id="resultado"></div>
+
+        <script src="leaflet.js"></script>
+        <script>
+                var map = L.map('map').setView([40.416775, -3.703790], 6);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                var marker1;
+                var marker2;
+
+                function onMapClick(e) {
+                    if (!marker1) {
+                        marker1 = L.marker(e.latlng).addTo(map);
+                    } else if (!marker2) {
+                        marker2 = L.marker(e.latlng).addTo(map);
+                    } else {
+                        marker1.remove();
+                        marker2.remove();
+                        marker1 = L.marker(e.latlng).addTo(map);
+                        marker2 = null;
+                    }
+                }
+
+                map.on('click', onMapClick);
+
+                function calcularGasolina() {
+    // Obtener los valores ingresados por el usuario
+    var ida_vuelta = document.getElementById("ida_vuelta").checked;
+    var precio_combustible = parseFloat(document.getElementById("precio_combustible").value);
+
+    // Verificar si ambos marcadores están definidos
+    if (!marker1 || !marker2) {
+        alert("Por favor, seleccione dos puntos en el mapa.");
+        return;
+    }
+
+    // Obtener la distancia entre los dos puntos seleccionados
+    var distance = marker1.getLatLng().distanceTo(marker2.getLatLng()) / 1000;
+
+    // Calcular los litros de gasolina necesarios y el costo total
+    var consumo = 6; // Consumo de gasolina en litros por cada 100 km
+    var litros = (consumo / 100) * distance;
+    var costo_total = litros * precio_combustible;
+
+    // Mostrar el resultado al usuario
+    var resultado = document.getElementById("resultado");
+    resultado.innerHTML = "Distancia recorrida: " + distance.toFixed(2) + " km<br>" +
+            "Consumo de gasolina: " + consumo + " litros por cada 100 km<br>" +
+            "Litros de gasolina necesarios: " + litros.toFixed(2) + "<br>" +
+            "Costo total de la gasolina: " + costo_total.toFixed(2) + " euros";
+    if (ida_vuelta) {
+        litros = litros * 2;
+        costo_total = costo_total * 2;
+        resultado.innerHTML += "<br>Ida y vuelta seleccionado.<br>" +
+                "Litros de gasolina necesarios (ida y vuelta): " + litros.toFixed(2) + "<br>" +
+                "Costo total de la gasolina (ida y vuelta): " + costo_total.toFixed(2) + " euros";
+    }
+}
+
+        </script>
+    </body>
+</html>
